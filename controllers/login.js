@@ -1,12 +1,20 @@
-import { parseReqBody } from "../utility/utils.js";
+import { parseReqBody } from "../utility/parseReqBody.js";
 import bcrypt from "bcrypt";
 import { findUserByEmail } from "../models/userModel.js";
 import { createSession } from "./manageSessions.js";
+import { loginValidator } from "../validator/loginValidator.js";
 
 export const loginUser = async (req, res) => {
   try {
+    const reqBody = await parseReqBody(req);
+    const { isValid, errors, sanitizedData } = loginValidator(reqBody);
+
+    if (!isValid) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ message: errors[0] }));
+    }
     // Parse email & password
-    const { email, password } = await parseReqBody(req);
+    const { email, password } = sanitizedData;
 
     const user = await findUserByEmail(email);
     if (!user) {
@@ -36,13 +44,25 @@ export const loginUser = async (req, res) => {
       // "Set-Cookie": `sessionId=${sessionId}; HttpOnly; Path=/; Max-Age=3600; SameSite=Lax; Secure`,
 
       // CORS header: allow cookie to be received on frontend
-      "Access-Control-Allow-Origin": "http://localhost:3000", // your frontend URL
+      "Access-Control-Allow-Origin": `${process.env.FRONTEND_URL}`,
       "Access-Control-Allow-Credentials": "true",
 
       "Content-Type": "application/json",
     });
 
-    res.end(JSON.stringify({ message: "logged in successfully" }));
+    const safeUser = {
+      id: user._id,
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      address: user.address,
+      city: user.city,
+      role: user.role,
+    };
+
+    res.end(
+      JSON.stringify({ message: "logged in successfully", owner: safeUser })
+    );
   } catch (err) {
     console.error("login failed:", err);
     res.writeHead(500, { "Content-Type": "application/json" });

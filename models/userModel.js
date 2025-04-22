@@ -1,14 +1,13 @@
 import { readCollection } from "../config/readDb.js";
 
 const collectionName = "users";
-//createUser
 export const createUser = async (userdata) => {
   try {
     const usersCollection = await readCollection(collectionName);
     await usersCollection.insertOne(userdata);
   } catch (err) {
     console.error("error creating user:", err);
-    throw new Error("error creating user");
+    throw err;
   }
 };
 
@@ -20,7 +19,7 @@ export const findUserByEmail = async (email) => {
     return user;
   } catch (err) {
     console.error("error finding user by email:", err);
-    throw new Error("error finding user");
+    throw err;
   }
 };
 
@@ -31,7 +30,7 @@ export const findUserById = async (userId) => {
     return user;
   } catch (err) {
     console.error("Error finding user by ID:", err);
-    throw new Error("Error finding user by ID");
+    throw err;
   }
 };
 
@@ -45,7 +44,7 @@ export const updateUserById = async (userId, updateData) => {
     return result.modifiedCount > 0;
   } catch (err) {
     console.error("Error updating user:", err);
-    throw new Error("Error updating user");
+    throw err;
   }
 };
 
@@ -56,7 +55,7 @@ export const findUserByPhone = async (phoneNumber) => {
     return user;
   } catch (err) {
     console.error("Error finding user by phone:", err);
-    throw new Error("Error finding user by phone");
+    throw err;
   }
 };
 
@@ -66,8 +65,8 @@ export const deleteUser = async (email) => {
     const collection = await readCollection(collectionName);
     const result = await collection.deleteOne({ email });
     return result.deletedCount > 0;
-  } catch (error) {
+  } catch (err) {
     console.error("Error deleting user:", error);
-    throw new Error("Error deleting user");
+    throw err;
   }
 };

@@ -6,7 +6,7 @@ import {
 } from "../models/userModel.js";
 import { getAuthenticatedUser } from "./authSession.js";
 import bcrypt from "bcrypt";
-import { parseReqBody } from "../utility/utils.js";
+import { parseReqBody } from "../utility/parseReqBody.js";
 
 export const updateUserAccount = async (req, res) => {
   const userId = await getAuthenticatedUser(req);

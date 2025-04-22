@@ -15,6 +15,17 @@ export const connectToDb = async () => {
       await client.connect();
       isConnected = true;
       console.log("Connected to MongoDB");
+
+      const db = client.db("kongonisDb");
+      const usersCollection = db.collection("users");
+
+      // Create unique index for phone number
+      await usersCollection.createIndex({ phone: 1 }, { unique: true });
+
+      // You can also add one for email
+      await usersCollection.createIndex({ email: 1 }, { unique: true });
+
+      console.log("Indexes ensured on phone and email");
     }
     return client.db("kongonisDb");
   } catch (error) {
