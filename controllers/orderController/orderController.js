@@ -1,11 +1,17 @@
-import { parseReqBody } from "../utility/parseReqBody.js";
-import { getAuthenticatedUser } from "../controllers/authSession.js";
-import { insertTempOrder } from "../models/orderModel.js";
-import { validateOrder } from "../validator/orderValidator.js";
-import { generateOrderId } from "../menu/generateOrderId.js";
-import { findMealById } from "../models/mealModel.js";
-import { stkPushRequest } from "../payment/stkPush.js";
-import { normalizedPhoneNumber } from "../utility/sanitization.js";
+import { parseReqBody } from "../../utility/parseReqBody.js";
+import { getAuthenticatedUser } from "../../middleware/authSession.js";
+import { insertTempOrder } from "../../models/orderModel.js";
+import { validateOrder } from "../../validator/orderValidator.js";
+import { generateOrderId } from "../../utility/generateOrderId.js";
+import { findMealById } from "../../models/mealModel.js";
+import { stkPushRequest } from "../../payment/stkPush.js";
+import { normalizedPhoneNumber } from "../../utility/sanitization.js";
+import {
+  sendSuccess,
+  sendUnauthorized,
+  sendServerError,
+  sendBadRequest,
+} from "../../utility/sendResponse.js";
 // Sanitize and verify order on backend
 
 export const createOrder = async (req, res) => {
@@ -13,16 +19,14 @@ export const createOrder = async (req, res) => {
     const userId = await getAuthenticatedUser(req);
 
     if (!userId) {
-      res.writeHead(401, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({ message: "Unauthorized" }));
+      return sendUnauthorized(res, { message: "unauthorized" });
     }
 
     const reqBody = await parseReqBody(req);
     const { isValid, errors, sanitizedData } = validateOrder(reqBody);
 
     if (!isValid) {
-      res.writeHead(400, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({ message: errors[0] }));
+      return sendBadRequest(res, { message: errors[0] });
     }
 
     const { items, payment, notes, delivery } = sanitizedData;
@@ -35,10 +39,9 @@ export const createOrder = async (req, res) => {
       const meal = await findMealById(item.itemId);
 
       if (!meal) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        return res.end(
-          JSON.stringify({ message: `Invalid meal ID: ${item.itemId}` })
-        );
+        return sendBadRequest(res, {
+          message: `Invalid meal ID: ${item.itemId}`,
+        });
       }
 
       const quantity = parseInt(item.quantity);
@@ -48,6 +51,7 @@ export const createOrder = async (req, res) => {
       validatedItems.push({
         itemId: item.itemId,
         name: meal.mealName,
+        imageUrl: meal.mealImage,
         quantity,
         price,
         subtotal,
@@ -57,14 +61,9 @@ export const createOrder = async (req, res) => {
     }
 
     // Calculate fees and total amount
-    const taxRate = 0.08; // 8% tax rate
     const deliveryFee = 100; // fixed delivery fee
-    const tip = payment.tip || 10;
 
-    const tax = Math.round(recalculatedSubtotal * taxRate);
-    const totalAmount = Math.round(
-      recalculatedSubtotal + tax + deliveryFee + tip
-    );
+    const totalAmount = Math.round(recalculatedSubtotal + deliveryFee);
 
     const temporaryOrder = {
       customerId: userId,
@@ -74,9 +73,7 @@ export const createOrder = async (req, res) => {
         method: payment.method,
         amount: totalAmount,
         status: "pending",
-        tax,
         deliveryFee,
-        tip,
         currency: payment.currency || "USD",
         phoneNumber: delivery.phoneNumber,
       },
@@ -90,13 +87,12 @@ export const createOrder = async (req, res) => {
 
     await insertTempOrder(temporaryOrder);
 
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(
-      JSON.stringify({
+    if (temporaryOrder) {
+      return sendSuccess(res, {
         message: "Order placed. Proceeding with payment.",
         orderId: temporaryOrder.orderId,
-      })
-    );
+      });
+    }
 
     const sanitizePhoneNumber = (phone) => {
       const normal = normalizedPhoneNumber(phone); //convert it to +254...
@@ -111,7 +107,6 @@ export const createOrder = async (req, res) => {
     });
   } catch (err) {
     console.error("Error creating order:", err);
-    res.writeHead(500, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "Internal server error" }));
+    return sendServerError(res, { message: "Internal server error" });
   }
 };

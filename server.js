@@ -1,59 +1,55 @@
 import http from "http";
-import { registerUser } from "./controllers/register.js";
-import { loginUser } from "./controllers/login.js";
-import { updateUserAccount } from "./controllers/updateUser.js";
-import { logoutUser } from "./controllers/logout.js";
-import { deleteUserAccount } from "./controllers/deleteUser.js";
-import { createOrder } from "./controllers/orderController.js";
-import { handleGetMe } from "./controllers/checkUser.js";
 import { handleCORS, handlePreflight } from "./config/handleCors.js";
-import { createTTLIndex } from "./controllers/manageSessions.js";
-import { getMenuTypes, getCategories, getMeals } from "./menu/menuRoutes.js";
-import { stkPushRequest } from "./payment/stkPush.js";
-import { confirmationHandler } from "./payment/confirmationHandler.js";
-const port = process.env.PORT || 5000;
+import { createTTLIndex } from "./middleware/manageSessions.js";
+import { sendMethodNotAllowed, sendNotFound } from "./utility/sendResponse.js";
+import { routes } from "./routes.js";
+import {
+  getMeals,
+  getCategories,
+} from "./controllers/mealsControllers/menuRoutes.js";
 
+const port = process.env.PORT || 5000;
 await createTTLIndex();
+
 const server = http.createServer(async (req, res) => {
   handleCORS(req, res);
 
-  if (handlePreflight(req, res)) {
-    return;
+  if (handlePreflight(req, res)) return;
+
+  const { method, url, headers } = req;
+  const pathname = new URL(url, `http://${headers.host}`).pathname;
+
+  // Special dynamic meals route
+  if (pathname.startsWith("/meals") && method === "GET") {
+    return await getMeals(req, res);
+  } else if (pathname.startsWith("/categories")) {
+    return await getCategories(req, res);
   }
 
-  if (req.method === "POST") {
-    if (req.url === "/register") {
-      await registerUser(req, res);
-    } else if (req.url === "/login") {
-      await loginUser(req, res);
-    } else if (req.url === "/logout") {
-      await logoutUser(req, res);
-    } else if (req.url === "/order") {
-      await createOrder(req, res);
-    } else if (req.url === "/stkPush") {
-      await stkPushRequest(req, res);
-    } else if (req.url === "/api/v1/mpesa/confirmation") {
-      await confirmationHandler(req, res);
-    }
-  } else if (req.method == "GET") {
-    if (req.url === "/me") {
-      handleGetMe(req, res);
-    } else if (req.url === "/menutypes") {
-      await getMenuTypes(req, res);
-    } else if (req.url.startsWith("/categories")) {
-      await getCategories(req, res);
-    } else if (req.url.startsWith("/meals")) {
-      await getMeals(req, res);
-    }
-  } else if (req.method === "PUT") {
-    if (req.url === "/updateUser") {
-      await updateUserAccount(req, res);
-    }
-  } else if ((req.method = "DELETE")) {
-    if (req.url === "/deleteUser") {
-      await deleteUserAccount(req, res);
-    }
+  const methodRoutes = routes[method];
+
+  if (!methodRoutes) {
+    return sendMethodNotAllowed(res, {
+      message: `Method ${method} not allowed`,
+    });
   }
+
+  const routeHandler = methodRoutes[pathname];
+
+  if (routeHandler) {
+    return await routeHandler(req, res);
+  }
+
+  const allowedMethods = Object.keys(routes).filter((m) => routes[m][pathname]);
+
+  if (allowedMethods.length > 0) {
+    return sendMethodNotAllowed(res, {
+      message: `Method ${method} not allowed for ${pathname}`,
+    });
+  }
+
+  // Otherwise, route not found
+  return sendNotFound(res, { message: `Route ${pathname} not found` });
 });
 
-server.listen(port, () => console.log(`server running on port ${port}`));
+server.listen(port, () => console.log(`Server running on port ${port}`));

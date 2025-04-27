@@ -1,14 +1,11 @@
-import {
-  sanitizeInput,
-  validateEmail,
-  validatePhoneNumber,
-  normalizedPhoneNumber,
-} from "../utility/sanitization.js";
+import { sanitizeInput } from "../utility/sanitization.js";
+import { validatePhoneNumber } from "../utility/sanitization.js";
+import { validateEmail } from "../utility/sanitization.js";
 
-export const registerValidator = (reqBody) => {
+export const updateAccountValidator = (reqBody) => {
   const error = [];
   const clean = sanitizeInput(reqBody);
-  const { name, email, password, phoneNumber, address, city } = clean;
+  const { name, email, phoneNumber, address, city } = clean;
 
   if (!name || name.length < 3) {
     error.push("Name must be at least 3 characters long.");
@@ -16,10 +13,6 @@ export const registerValidator = (reqBody) => {
 
   if (!email || !validateEmail(email)) {
     error.push("Invalid email format.");
-  }
-
-  if (!password || password.length < 6) {
-    error.push("Password must be at least 6 characters long.");
   }
 
   if (!phoneNumber || !validatePhoneNumber(phoneNumber)) {

@@ -20,6 +20,8 @@ export const generateAccessToken = async () => {
     const data = await response.json();
 
     if (response.ok) {
+      console.log("data.access_token", data.access_token);
+
       return data.access_token;
     } else {
       throw new Error(

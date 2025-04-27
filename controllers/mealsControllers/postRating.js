@@ -1,8 +1,13 @@
-import { readCollection } from "../config/readDb.js";
-import { parseReqBody } from "../utility/parseReqBody";
-import { getAuthenticateduserId } from "./authSession.js";
+import { readCollection } from "../../config/readDb.js";
+import { parseReqBody } from "../../utility/parseReqBody.js";
+import { getAuthenticateduserId } from "../authSession.js";
 export const postRating = async (req, res) => {
   const userId = await getAuthenticateduserId(req);
+  if (!userId) {
+    res.writeHead(401, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ message: "Unauthorized" }));
+    return;
+  }
 
   try {
     const { mealId, rating } = parseReqBody(req.body);
@@ -13,7 +18,7 @@ export const postRating = async (req, res) => {
     }
 
     const ratingsDb = await readCollection("ratings");
-    const mealsDb = await readCollection("menuData");
+    const mealsDb = await readCollection("meals");
 
     //if userId already rated this meal
     const existingRating = await ratingsDb.findOne({ mealId, userId });

@@ -12,12 +12,7 @@ export const handleCORS = (req, res) => {
 
 export const handlePreflight = (req, res) => {
   if (req.method === "OPTIONS") {
-    res.writeHead(204, {
-      "Access-Control-Allow-Origin": allowedOrigin,
-      "Access-Control-Allow-Credentials": "true",
-      "Access-Control-Allow-Methods": "POST, GET, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    });
+    handleCORS(req, res);
     res.end();
     return true;
   }

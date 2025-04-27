@@ -14,7 +14,7 @@ export const handleSuccess = async (callback) => {
     return acc;
   }, {});
 
-  const transactionCollection = readCollection("transaction");
+  const transactionCollection = await readCollection("transaction");
   const transaction = await (
     await transactionCollection
   ).findOne({ checkoutRequestID: CheckoutRequestID });
@@ -67,7 +67,7 @@ export const handleSuccess = async (callback) => {
   await insertOrder(finalizedOrder);
 
   await (
-    await transactionCollection
+    await transactionCollection()
   ).updateOne(
     { CheckoutRequestID },
     { $set: { status: "success", completedAt: new Date() } }

@@ -39,7 +39,7 @@ export const validateOrder = (order) => {
   }
 
   if (payment) {
-    const { method, amount, status, tax, deliveryFee, tip, currency } = payment;
+    const { method, amount, status, deliveryFee } = payment;
 
     const allowedMethods = ["mpesa", "cash on delivery", "airtel money"];
     const normalizedMethod = method?.toLowerCase();
@@ -59,17 +59,8 @@ export const validateOrder = (order) => {
     if (!status || typeof status !== "string" || status.length < 3) {
       errors.push("Payment status must be at least 3 characters long");
     }
-    if (typeof tax !== "number" || tax < 0) {
-      errors.push("Tax must be a non-negative number");
-    }
     if (typeof deliveryFee !== "number" || deliveryFee < 0) {
       errors.push("Delivery fee must be a non-negative number");
-    }
-    if (typeof tip !== "number" || tip < 0) {
-      errors.push("Tip must be a non-negative number");
-    }
-    if (!currency || typeof currency !== "string" || currency.length < 3) {
-      errors.push("Currency must be a valid 3-letter string");
     }
   } else {
     errors.push("Payment object is required");

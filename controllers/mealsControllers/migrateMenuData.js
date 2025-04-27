@@ -1,4 +1,4 @@
-import { readCollection } from "../config/readDb.js";
+import { readCollection } from "../../config/readDb.js";
 import slugify from "slugify";
 
 export async function migrateMenuData() {

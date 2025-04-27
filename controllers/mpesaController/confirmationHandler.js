@@ -1,12 +1,13 @@
-import { parseReqBody } from "../utility/parseReqBody.js";
-import { readCollection } from "../config/readDb.js";
-import { handleSuccess, handleFailure } from "./mpesaUtils.js";
-const callBackCollection = await readCollection("transactions");
+import { parseReqBody } from "../../utility/parseReqBody.js";
+import { handleSuccess, handleFailure } from "../../payment/mpesaUtils.js";
+import { saveStkCallback } from "../../models/transactionModel.js";
 
 export const confirmationHandler = async (req, res) => {
   try {
     const body = await parseReqBody(req);
+    console.log("in confirmation handler Received body:", body); // Add this log
     const callback = body.Body?.stkCallback;
+
     if (!callback) {
       res.writeHead(400, {
         "Content-Type": "application/json",
@@ -24,13 +25,7 @@ export const confirmationHandler = async (req, res) => {
       ResultDesc,
     });
 
-    await callBackCollection.insertOne({
-      MerchantRequestID: callback.MerchantRequestID,
-      CheckoutRequestID: callback.CheckoutRequestID,
-      ResultCode,
-      ResultDesc,
-      receivedAt: new Date(),
-    });
+    await saveStkCallback(callback);
 
     if (ResultCode === 0) {
       await handleSuccess(callback);
