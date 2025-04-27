@@ -8,6 +8,9 @@ import {
   getCategories,
 } from "./controllers/mealsControllers/menuRoutes.js";
 
+import dotenv from "dotenv";
+dotenv.config();
+
 const port = process.env.PORT || 5000;
 await createTTLIndex();
 

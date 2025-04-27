@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 const allowedOrigin = process.env.FRONTEND_URL;
 
 export const handleCORS = (req, res) => {

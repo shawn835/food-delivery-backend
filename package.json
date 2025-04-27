@@ -5,7 +5,7 @@
   "description": "food web app",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon --env-file=.env server.js"
+    "start": "nodemon server.js"
   },
   "author": "shawn",
   "license": "MIT",
