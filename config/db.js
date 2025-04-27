@@ -16,7 +16,8 @@ export const connectToDb = async () => {
       isConnected = true;
       console.log("Connected to MongoDB");
 
-      const db = client.db("kongonisDb");
+      const db = client.db("foodDelivery");
+
       const usersCollection = db.collection("users");
 
       // Create unique index for phone number
