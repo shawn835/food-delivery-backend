@@ -9,7 +9,6 @@ import {
   sendSuccess,
   sendUnauthorized,
 } from "../../utility/sendResponse.js";
-
 export const loginUser = async (req, res) => {
   try {
     const reqBody = await parseReqBody(req);
@@ -18,9 +17,8 @@ export const loginUser = async (req, res) => {
     if (!isValid) {
       return sendBadRequest(res, { message: errors[0] });
     }
-    // Parse email & password
-    const { email, password } = sanitizedData;
 
+    const { email, password } = sanitizedData;
     const user = await findUserByEmail(email);
 
     if (!user) {
@@ -40,7 +38,7 @@ export const loginUser = async (req, res) => {
         "HttpOnly",
         "Path=/",
         "Max-Age=3600",
-        "SameSite=Lax",
+        "SameSite=None",
       ];
 
       if (process.env.NODE_ENV === "production") {
@@ -48,8 +46,6 @@ export const loginUser = async (req, res) => {
       }
 
       res.setHeader("Set-Cookie", cookieOptions.join("; "));
-      res.setHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
-      res.setHeader("Access-Control-Allow-Credentials", "true");
     }
 
     const safeUser = {

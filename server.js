@@ -15,9 +15,9 @@ const port = process.env.PORT || 5000;
 await createTTLIndex();
 
 const server = http.createServer(async (req, res) => {
-  handleCORS(req, res);
-
   if (handlePreflight(req, res)) return;
+
+  handleCORS(req, res);
 
   const { method, url, headers } = req;
   const pathname = new URL(url, `http://${headers.host}`).pathname;
