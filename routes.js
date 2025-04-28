@@ -13,6 +13,7 @@ import { handleOrderHistory } from "./controllers/mealsControllers/orderHistory.
 import { updateUserPassword } from "./controllers/userControllers/updateUserPassword.js";
 import { handleMealsUpload } from "./controllers/mealsControllers/mealUpload.js";
 import { getOrders } from "./controllers/mealsControllers/getOrders.js";
+import { toggleFavouriteMeal } from "./controllers/mealsControllers/addToFavourites.js";
 
 // Route Handlers
 export const routes = {
@@ -26,6 +27,7 @@ export const routes = {
     "/updatepassword": updateUserPassword,
     "/uploadmeals": handleMealsUpload,
     "/getallorders": getOrders,
+    "/togglefavourite": toggleFavouriteMeal,
   },
   GET: {
     "/me": handleGetMe,

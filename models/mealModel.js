@@ -92,7 +92,6 @@ export async function getTrendingMeals() {
     price: meal.price,
     imageUrl: meal.mealImage,
     rating: meal.rating,
-    // Uncomment if needed:
     // averageRating: meal.averageRating,
     // totalRatings: meal.totalRatings,
   }));
@@ -115,6 +114,40 @@ export const insertMeal = async (meal) => {
     await mealsCollection.insertOne(meal);
   } catch (error) {
     console.error("error creating user:", err);
+    throw err;
+  }
+};
+
+export const addMealTofavourites = async (userId, mealId) => {
+  try {
+    const favouritesCollection = await readCollection("favourites");
+    await favouritesCollection.insertOne({
+      userId,
+      mealId,
+      createdAt: new Date(),
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const findFavouriteMeal = async (userId, mealId) => {
+  try {
+    const favouritesCollection = await readCollection("favourites");
+    const meal = await favouritesCollection.findOne({ userId, mealId });
+    return meal;
+  } catch (err) {
+    console.error("Error finding order by ID:", err);
+    throw err;
+  }
+};
+
+export const removeMealFromFavourites = async (userId, mealId) => {
+  try {
+    const favouritesCollection = await readCollection("favourites");
+    await favouritesCollection.deleteOne({ userId, mealId });
+  } catch (err) {
+    console.error("Error finding order by ID:", err);
     throw err;
   }
 };

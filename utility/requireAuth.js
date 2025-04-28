@@ -1,12 +1,10 @@
 import { getAuthenticatedUser } from "../middleware/authSession.js";
+import { sendUnauthorized } from "./sendResponse.js";
 
-export const requireAuth = async (req, res, next) => {
+export const requireAuth = async (req, res, onAuthSuccess) => {
   const userId = await getAuthenticatedUser(req);
   if (!userId) {
-    res.writeHead(401, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "Unauthorized" }));
-    return;
+    return sendUnauthorized(res, { message: "Unauthorized" });
   }
-
-  next(userId);
+  onAuthSuccess(userId);
 };

@@ -2,11 +2,9 @@ import { deleteUser, findUserById } from "../../models/userModel.js";
 import { requireAuth } from "../../utility/requireAuth.js";
 
 export const deleteUserAccount = async (req, res) => {
-  requireAuth(req, res, async (userId) => {
+  await requireAuth(req, res, async (userId) => {
     try {
       const user = await findUserById(userId);
-      console.log(user);
-      console.log(user.email);
 
       if (!user || !user.email) {
         res.writeHead(404, { "Content-Type": "application/json" });
