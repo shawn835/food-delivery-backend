@@ -16,19 +16,18 @@ export const connectToDb = async () => {
       isConnected = true;
       console.log("Connected to MongoDB");
 
-      const db = client.db("foodDelivery");
+      const db = client.db(process.env.MONGO_DB_NAME);
 
       const usersCollection = db.collection("users");
 
-      // Create unique index for phone number
+      // Create unique index for phone number and email
       await usersCollection.createIndex({ phone: 1 }, { unique: true });
 
-      // You can also add one for email
       await usersCollection.createIndex({ email: 1 }, { unique: true });
 
       console.log("Indexes ensured on phone and email");
     }
-    return client.db("kongonisDb");
+    return client.db(process.env.MONGO_DB_NAME);
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
     throw error;

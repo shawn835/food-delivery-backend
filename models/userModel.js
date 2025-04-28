@@ -15,7 +15,9 @@ export const createUser = async (userdata) => {
 export const findUserByEmail = async (email) => {
   try {
     const usersCollection = await readCollection(collectionName);
-    const user = await usersCollection.findOne({ email });
+    const user = await usersCollection.findOne({
+      email: email.trim().toLowerCase(),
+    });
     return user;
   } catch (err) {
     console.error("error finding user by email:", err);

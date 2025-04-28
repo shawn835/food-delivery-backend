@@ -22,6 +22,7 @@ export const loginUser = async (req, res) => {
     const { email, password } = sanitizedData;
 
     const user = await findUserByEmail(email);
+
     if (!user) {
       return sendBadRequest(res, { message: "user not found" });
     }
