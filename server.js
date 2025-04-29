@@ -7,7 +7,6 @@ import {
   getMeals,
   getCategories,
 } from "./controllers/mealsControllers/menuRoutes.js";
-
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -21,6 +20,19 @@ const server = http.createServer(async (req, res) => {
 
   const { method, url, headers } = req;
   const pathname = new URL(url, `http://${headers.host}`).pathname;
+
+  // Add /health route here
+  if (pathname === "/health" && method === "GET") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify({
+        status: "ok",
+        time: new Date().toISOString(),
+        dbStatus: "ok", // You can check DB status here if needed
+      })
+    );
+    return;
+  }
 
   // Special dynamic meals route
   if (pathname.startsWith("/meals") && method === "GET") {
